@@ -1,0 +1,120 @@
+ROUTER FIX BLOCKS
+Paste one block into each router's CLI (at the R1> / R2> / R3> prompt).
+They clear any half-applied config and set the correct one. No reload needed.
+"% Invalid" or "not found" messages near the top are fine.
+
+=============================== R1 ===============================
+enable
+configure terminal
+no router ospf 1
+hostname R1
+no ip domain-lookup
+interface GigabitEthernet0/0
+ ip address 192.168.40.1 255.255.255.0
+ no shutdown
+interface GigabitEthernet0/1
+ ip address 10.0.12.1 255.255.255.252
+ no shutdown
+interface GigabitEthernet0/2
+ ip address 10.0.13.1 255.255.255.252
+ no shutdown
+exit
+router ospf 1
+ router-id 1.1.1.1
+ network 192.168.40.0 0.0.0.255 area 0
+ network 10.0.12.0 0.0.0.3 area 0
+ network 10.0.13.0 0.0.0.3 area 0
+ passive-interface GigabitEthernet0/0
+end
+write memory
+
+=============================== R2 ===============================
+enable
+configure terminal
+no router ospf 1
+no ip access-list extended GUEST-IN
+no ip access-list extended POS-IN
+no ip dhcp pool GUESTS
+hostname R2
+no ip domain-lookup
+interface GigabitEthernet0/0
+ no ip address
+ no shutdown
+interface GigabitEthernet0/0.10
+ encapsulation dot1Q 10
+ ip address 192.168.10.1 255.255.255.0
+interface GigabitEthernet0/0.20
+ encapsulation dot1Q 20
+ ip address 192.168.20.1 255.255.255.0
+interface GigabitEthernet0/0.30
+ encapsulation dot1Q 30
+ ip address 192.168.30.1 255.255.255.0
+interface GigabitEthernet0/1
+ ip address 10.0.12.2 255.255.255.252
+ no shutdown
+interface GigabitEthernet0/2
+ ip address 10.0.23.1 255.255.255.252
+ no shutdown
+exit
+ip dhcp excluded-address 192.168.30.1 192.168.30.99
+ip dhcp pool GUESTS
+ network 192.168.30.0 255.255.255.0
+ default-router 192.168.30.1
+ dns-server 192.168.50.10
+exit
+ip access-list extended GUEST-IN
+ permit udp any any eq bootps
+ permit icmp 192.168.30.0 0.0.0.255 host 192.168.30.1
+ permit icmp 192.168.30.0 0.0.0.255 host 192.168.50.10
+ permit tcp 192.168.30.0 0.0.0.255 host 192.168.50.10 eq www
+ permit udp 192.168.30.0 0.0.0.255 host 192.168.50.10 eq domain
+ deny ip any any
+exit
+ip access-list extended POS-IN
+ permit icmp 192.168.20.0 0.0.0.255 host 192.168.20.1
+ permit ip 192.168.20.0 0.0.0.255 host 192.168.50.20
+ permit icmp 192.168.20.0 0.0.0.255 any echo-reply
+ deny ip any any
+exit
+interface GigabitEthernet0/0.20
+ ip access-group POS-IN in
+interface GigabitEthernet0/0.30
+ ip access-group GUEST-IN in
+exit
+router ospf 1
+ router-id 2.2.2.2
+ network 192.168.10.0 0.0.0.255 area 0
+ network 192.168.20.0 0.0.0.255 area 0
+ network 192.168.30.0 0.0.0.255 area 0
+ network 10.0.12.0 0.0.0.3 area 0
+ network 10.0.23.0 0.0.0.3 area 0
+ passive-interface GigabitEthernet0/0.10
+ passive-interface GigabitEthernet0/0.20
+ passive-interface GigabitEthernet0/0.30
+end
+write memory
+
+=============================== R3 ===============================
+enable
+configure terminal
+no router ospf 1
+hostname R3
+no ip domain-lookup
+interface GigabitEthernet0/0
+ ip address 192.168.50.1 255.255.255.0
+ no shutdown
+interface GigabitEthernet0/1
+ ip address 10.0.23.2 255.255.255.252
+ no shutdown
+interface GigabitEthernet0/2
+ ip address 10.0.13.2 255.255.255.252
+ no shutdown
+exit
+router ospf 1
+ router-id 3.3.3.3
+ network 192.168.50.0 0.0.0.255 area 0
+ network 10.0.23.0 0.0.0.3 area 0
+ network 10.0.13.0 0.0.0.3 area 0
+ passive-interface GigabitEthernet0/0
+end
+write memory
