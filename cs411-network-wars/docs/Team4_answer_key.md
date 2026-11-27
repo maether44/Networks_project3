@@ -1,10 +1,10 @@
-# TeamX Answer Key: Lagoon View Hotel Network
+# Team4 Answer Key: Lagoon View Hotel Network
 
-CS411 Computer Networks, Project 3 (Network Wars), Session 1. Prepared by Team X. Confidential, for the instructor only.
+CS411 Computer Networks, Project 3 (Network Wars), Session 1. Prepared by Team 4. Confidential, for the instructor only.
 
 ## 1. Summary of Faults
 
-We made a copy of TeamX_working.pkt and added six faults to it to make TeamX_broken.pkt. Each fault is on a different device. Faults 1 and 4 both affect POS terminals and look similar, but they have different causes.
+We made a copy of Team4_working.pkt and added six faults to it to make Team4_broken.pkt. Each fault is on a different device. Faults 1 and 4 both affect POS terminals and look similar, but they have different causes.
 
 | No. | Category | Device | What we changed | Symptom |
 | --- | --- | --- | --- | --- |
@@ -114,7 +114,7 @@ R2(config-ext-nacl)# deny ip any any
 
 Symptom: Everything guests should be able to do still works, so nothing looks broken. But a guest laptop can ping the Reservation server 192.168.50.20, which goes against policy rule 1.
 
-How to find it: Ping 192.168.50.20 from a guest laptop succeeds, but test 9 in the handover says it should fail. show access-lists on R2 shows the line permit ip 192.168.30.0 0.0.0.255 192.168.50.0 0.0.0.255 with matches, instead of the host rules listed in the handover.
+How to find it: Ping 192.168.50.20 from a guest laptop succeeds, but test 9 in the handover says it should fail. show access-lists on R2 shows the line permit ip 192.168.30.0 0.0.0.255 192.168.50.0 0.0.0.255 instead of the host rules listed in the handover.
 
 Correction:
 
@@ -137,7 +137,7 @@ Check: A guest ping to 192.168.50.20 fails. A guest can still ping 192.168.50.10
 
 ### Fault 6: OSPF hello timer mismatch hidden by the redundant path
 
-Change: On R3, the OSPF hello interval on the link to R2 was changed to 5 seconds. R2 stays at the default 10 seconds. The dead interval on R3 changes to 20 seconds automatically.
+Change: On R3, the OSPF hello interval on the link to R2 was changed to 5 seconds. R2 stays at the default 10 seconds. (Packet Tracer 8.2.2 leaves R3's dead interval at 40, so only the hello timers differ.)
 
 ```
 R3(config)# interface GigabitEthernet0/1
@@ -146,19 +146,49 @@ R3(config-if)# ip ospf hello-interval 5
 
 Symptom: No ping fails because of this fault on its own. OSPF sends traffic between the front of house and the server room through R1 instead, which hides the problem. From Staff-PC1, tracert 192.168.50.20 shows 192.168.10.1, 10.0.12.1, 10.0.13.2, 192.168.50.20. That is one hop more than the path in the handover. If the R1 link also failed, the front desk would lose the servers completely.
 
-How to find it: show ip ospf neighbor on R2 and on R3 shows only one neighbour (1.1.1.1), but the handover says each router should have two. show ip ospf interface GigabitEthernet0/1 shows Hello 5, Dead 20 on R3 and Hello 10, Dead 40 on R2.
+How to find it: show ip ospf neighbor on R2 and on R3 shows only one neighbour (1.1.1.1), but the handover says each router should have two. show ip ospf interface GigabitEthernet0/1 on R3 shows "Hello 5, Dead 40" and "Neighbor Count is 0", while show ip ospf interface GigabitEthernet0/2 on R2 shows Hello 10, Dead 40. show ip route on R2 has 192.168.50.0/24 via 10.0.12.1 with cost 3 instead of via 10.0.23.2 with cost 2.
 
 Correction:
 
 ```
 R3(config)# interface GigabitEthernet0/1
-R3(config-if)# ip ospf hello-interval 10
-R3(config-if)# ip ospf dead-interval 40
+R3(config-if)# no ip ospf hello-interval
 ```
+
+(ip ospf hello-interval 10 works too.)
 
 Check: R2 and R3 each show two FULL neighbours, and the tracert from Staff-PC1 goes back to 192.168.10.1, 10.0.23.2, 192.168.50.20.
 
-## 6. Notes
+## 6. Verification Evidence
+
+Both files were built and tested in Cisco Packet Tracer 8.2.2 on 2026-11-27.
+
+### Baseline (Team4_working.pkt)
+
+| Check | Result |
+| --- | --- |
+| OSPF neighbours | R1, R2 and R3 each have 2 neighbours in FULL state |
+| Routing tables | All 8 networks on every router; R2 reaches 192.168.50.0 via 10.0.23.2 (cost 2) |
+| Guest DHCP | Guest-Laptop1 got 192.168.30.101, Guest-Laptop2 got 192.168.30.100, gateway 192.168.30.1 |
+| Allowed pings | Staff-PC1 to 192.168.50.20, Staff-PC2 to 192.168.50.10, Staff-PC3 to 192.168.40.11, Staff-PC1 to 192.168.20.12, Manager-PC to 192.168.20.13, Admin-PC to 192.168.10.13, POS3 to 192.168.50.20, POS1 to 192.168.20.13, Guest-Laptop1 to 192.168.50.10: all replied |
+| DNS | nslookup www.lagoonview.local from Guest-Laptop2 returned 192.168.50.10 |
+| Blocked pings | POS1 to 192.168.50.10, POS2 to 192.168.10.11, Guest-Laptop1 to 192.168.50.20, Guest-Laptop2 to 192.168.20.11: "Destination host unreachable" from the gateway. Staff-PC1 to 192.168.30.101: timed out |
+| Paths | Staff-PC1 tracert 192.168.50.20: 192.168.10.1, 10.0.23.2, 192.168.50.20. Manager-PC tracert 192.168.10.11: 192.168.40.1, 10.0.12.2, 192.168.10.11 |
+
+### Faulty network (Team4_broken.pkt)
+
+| Fault | Observed symptom |
+| --- | --- |
+| 1 | POS3 ping 192.168.20.1: 2 of 2 timed out |
+| 2 | Staff-PC3 ping 192.168.10.1: 2 of 2 timed out |
+| 3 | Manager-PC ping 192.168.50.20: timed out. R2 has no route to 192.168.40.0/24 |
+| 4 | POS2 ping 192.168.20.1 replies; POS2 ping 192.168.50.20 times out |
+| 5 | Guest-Laptop1 ping 192.168.50.20 replies (TTL 125). show access-lists GUEST-IN shows the /24 permit |
+| 6 | R2 and R3 each list only 1.1.1.1 as a neighbour. Staff-PC1 tracert 192.168.50.20: 192.168.10.1, 10.0.12.1, 10.0.13.2, 192.168.50.20 |
+
+Faults 5 and 6 overlap: because of Fault 6, guest traffic to the servers goes through R1, so the guest ping in Fault 5 has TTL 125 instead of 126. Fixing either fault does not hide the other.
+
+## 7. Notes
 
 - After making the changes we waited about one minute for the OSPF dead timer to expire, then checked that every symptom above appeared.
 - No devices or links were removed and no passwords were set. Each fault can be fixed with one or two commands, or by changing one setting on a PC.

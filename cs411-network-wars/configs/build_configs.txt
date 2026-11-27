@@ -1,5 +1,5 @@
 =====================================================================
- LAGOON VIEW HOTEL - PACKET TRACER BUILD SCRIPT (TeamX_working.pkt)
+ LAGOON VIEW HOTEL - PACKET TRACER BUILD SCRIPT (Team4_working.pkt)
  CS411 Project 3 - Network Wars, Session 1
 =====================================================================
 
@@ -16,8 +16,8 @@ HOW TO USE
     the setup dialog -> paste that device's block from section B.
  4. Set the end-device IPs (section C) and server services (section D).
  5. Wait ~1 minute for OSPF + STP to converge, then run the checks in
-    section E. Save as TeamX_working.pkt.
- 6. File > Save As TeamX_broken.pkt, then apply the six faults (commands are in the
+    section E. Save as Team4_working.pkt.
+ 6. File > Save As Team4_broken.pkt, then apply the six faults (commands are in the
     answer key), re-run section E to confirm each symptom, and save.
 
 ---------------------------------------------------------------------
@@ -266,7 +266,7 @@ D. SERVER SERVICES  (Services tab)
  SRV-RES : reservation server. Leave HTTP on (default); DHCP Off. It only needs to answer ping.
 
 ---------------------------------------------------------------------
-E. BASELINE VERIFICATION (do this BEFORE saving TeamX_working.pkt)
+E. BASELINE VERIFICATION (do this BEFORE saving Team4_working.pkt)
 ---------------------------------------------------------------------
  Routers:
    show ip interface brief      -> all used interfaces up/up

@@ -1,6 +1,6 @@
-# TeamX Handover Document: Lagoon View Hotel Network
+# Team4 Handover Document: Lagoon View Hotel Network
 
-CS411 Computer Networks, Project 3 (Network Wars), Session 1. Prepared by Team X.
+CS411 Computer Networks, Project 3 (Network Wars), Session 1. Prepared by Team 4.
 
 ## 1. Business Description
 
@@ -18,7 +18,9 @@ No passwords are set on any router or switch (no enable secret, console or VTY p
 
 ## 2. Network Topology
 
-[Insert screenshot of the Packet Tracer topology here]
+![Lagoon View Hotel topology](../screenshots/topology.png)
+
+The file was built and saved in Cisco Packet Tracer 8.2.2.
 
 The three routers (Cisco 2911) are connected in a triangle, so there are two possible paths between any two routers. R2 does the inter-VLAN routing for the front of house using subinterfaces (router-on-a-stick). All switches are Cisco 2960.
 
@@ -152,7 +154,7 @@ ip access-list extended POS-IN
 
 ## 7. Expected Network Behaviour
 
-These are the results we got on our working network. The first ping sometimes times out because of ARP, so try again before deciding a test failed.
+These are the results we got on our working network. The first ping sometimes times out because of ARP, so try again before deciding a test failed. When the ACL on R2 blocks a ping from a POS terminal or a guest laptop, the PC shows "Reply from 192.168.20.1 (or 192.168.30.1): Destination host unreachable". In our tests the guest laptops received 192.168.30.100 and 192.168.30.101.
 
 | Test | From | To | Expected result |
 | --- | --- | --- | --- |

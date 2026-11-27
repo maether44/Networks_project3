@@ -1,9 +1,9 @@
-FAULT INJECTION - turns TeamX_working.pkt into TeamX_broken.pkt
+FAULT INJECTION - turns Team4_working.pkt into Team4_broken.pkt
 
-1. Open TeamX_working.pkt and do File > Save As TeamX_broken.pkt FIRST.
+1. Open Team4_working.pkt and do File > Save As Team4_broken.pkt FIRST.
 2. Paste each block into that device's CLI.
 3. Change POS2's gateway by hand (step F4).
-4. Wait about 1 minute, check each symptom from docs/answer_key.md, then File > Save.
+4. Wait about 1 minute, check each symptom from docs/Team4_answer_key.md, then File > Save.
 
 --- F1: SW2 (wrong access VLAN for POS3) ---
 enable
@@ -49,5 +49,6 @@ enable
 configure terminal
 interface GigabitEthernet0/1
  ip ospf hello-interval 5
+! PT 8.2.2 keeps dead-interval 40; only the hello timers differ
 end
 write memory
